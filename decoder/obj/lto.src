@@ -1,0 +1,475 @@
+	section	.text,"ax",@progbits
+	assume	adl = 1
+	section	.text,"ax",@progbits
+	public	_retrieve_data_from_video
+_retrieve_data_from_video:
+	ld	l, 0
+	ld	a, (_video_bin)
+	ld	b, a
+	ld	a, (_video_bin+1)
+	ld	d, a
+	ld	a, (_video_bin+2)
+	ld	h, a
+	ld	a, (_video_bin+3)
+	ld	c, a
+	ld	a, (_video_bin+4)
+	ld	e, a
+	ld	a, b
+	cp	a, 56
+	jr	nz, BB0_11
+	ld	a, d
+	cp	a, 52
+	jr	nz, BB0_11
+	ld	a, h
+	cp	a, 86
+	jr	nz, BB0_11
+	ld	a, c
+	cp	a, 73
+	jr	nz, BB0_11
+	ld	a, e
+	cp	a, 68
+	jr	nz, BB0_11
+	ld	a, (_video_bin+5)
+	ld	(_video_fps), a
+	add	a, -64
+	cp	a, -63
+	jr	c, BB0_11
+	ld	a, (_video_bin+6)
+	ld	(_video_version), a
+	cp	a, 1
+	jr	nz, BB0_11
+	ld	a, (_video_bin+7)
+	ld	(_video_scale_factor), a
+	add	a, -7
+	cp	a, -6
+	jr	c, BB0_11
+	ld	iy, _video_bin
+	ld	de, (_video_bin_len)
+	add	iy, de
+	ld	a, (iy - 1)
+	cp	a, -2
+	jr	z, BB0_10
+	ld	l, 0
+	jr	BB0_11
+BB0_10:
+	ld	l, -1
+BB0_11:
+	ld	a, l
+	ret
+	section	.text,"ax",@progbits
+
+	section	.text,"ax",@progbits
+	public	_begin_decode
+_begin_decode:
+	ld	hl, -34
+	call	__frameset
+	ld.sis	hl, 1000
+	ld	b, 0
+	ld	de, 9
+	ld	(ix - 3), de
+	ld	a, (_video_fps)
+	ld	c, a
+	ld	(ix - 13), bc
+	call	__sdivu
+	ld	de, 0
+	ld	e, l
+	ld	d, h
+	ld	(ix - 16), de
+BB1_1:
+	call	_clock
+	ld	(ix - 9), hl
+	ld	(ix - 10), e
+	scf
+	sbc	hl, hl
+	push	hl
+	call	_gfx_FillScreen
+	pop	hl
+	ld	hl, 240
+	push	hl
+	ld	hl, 40
+	push	hl
+	or	a, a
+	sbc	hl, hl
+	push	hl
+	push	hl
+	call	_gfx_FillRectangle
+	pop	hl
+	pop	hl
+	pop	hl
+	pop	hl
+	ld	hl, 240
+	push	hl
+	ld	hl, 40
+	push	hl
+	or	a, a
+	sbc	hl, hl
+	push	hl
+	ld	hl, 280
+	push	hl
+	call	_gfx_FillRectangle
+	pop	hl
+	pop	hl
+	pop	hl
+	pop	hl
+	ld	iy, 0
+	ld	bc, (ix - 3)
+BB1_2:
+	ld	hl, _video_bin
+	add	hl, bc
+	ld	a, (hl)
+	ld	(ix - 6), a
+	cp	a, -2
+	ld	(ix - 3), bc
+	jp	nc, BB1_18
+	lea	hl, iy
+	ld	de, 4
+	or	a, a
+	sbc	hl, de
+	lea	de, iy
+	inc	iy
+	jr	c, BB1_5
+	ex	de, hl
+	ld	de, 3
+	or	a, a
+	sbc	hl, de
+	call	pe, __setflag
+	jp	p, BB1_9
+	jp	BB1_16
+BB1_5:
+	or	a, a
+	sbc	hl, hl
+	push	hl
+	pop	bc
+	ld	c, (ix - 6)
+	ld	hl, JTI1_0
+	add	hl, de
+	add	hl, de
+	add	hl, de
+	ld	hl, (hl)
+	jp	(hl)
+BB1_6:
+	ld	a, (_video_scale_factor)
+	or	a, a
+	sbc	hl, hl
+	ld	l, a
+	call	__imulu
+	jp	BB1_14
+BB1_7:
+	ld	a, (_video_scale_factor)
+	or	a, a
+	sbc	hl, hl
+	ld	l, a
+	call	__imulu
+	ld	(ix - 19), hl
+	jp	BB1_15
+BB1_8:
+	ld	a, (_video_scale_factor)
+	or	a, a
+	sbc	hl, hl
+	ld	l, a
+	call	__imulu
+	ld	(ix - 25), hl
+	ld	bc, (ix - 3)
+BB1_9:
+	ld	hl, (ix - 22)
+	ld	de, 40
+	add	hl, de
+	push	hl
+	pop	bc
+	ld	hl, (ix - 19)
+	add	hl, de
+	ld	(ix - 31), hl
+	ld	(ix - 6), bc
+	or	a, a
+	sbc	hl, bc
+	push	hl
+	pop	de
+	push	de
+	pop	iy
+	add	iy, iy
+	sbc	hl, hl
+	push	hl
+	pop	bc
+	ex	de, hl
+	add	hl, bc
+	call	__ixor
+	ld	(ix - 34), hl
+	ld	hl, (ix - 25)
+	ld	de, (ix - 28)
+	or	a, a
+	sbc	hl, de
+	push	hl
+	pop	de
+	push	de
+	pop	iy
+	add	iy, iy
+	sbc	hl, hl
+	push	hl
+	pop	bc
+	ex	de, hl
+	add	hl, bc
+	call	__ixor
+	push	hl
+	pop	iy
+	ld	hl, (ix - 25)
+	ld	de, (ix - 28)
+	or	a, a
+	sbc	hl, de
+	jr	nz, BB1_11
+	ld	a, (_video_scale_factor)
+	ld	iy, 0
+	ld	iyl, a
+BB1_11:
+	ld	hl, (ix - 19)
+	ld	bc, (ix - 22)
+	or	a, a
+	sbc	hl, bc
+	ld	hl, (ix - 34)
+	jr	nz, BB1_13
+	ld	a, (_video_scale_factor)
+	or	a, a
+	sbc	hl, hl
+	ld	l, a
+BB1_13:
+	push	iy
+	push	hl
+	push	de
+	ld	hl, (ix - 6)
+	push	hl
+	call	_gfx_FillRectangle
+	pop	hl
+	pop	hl
+	pop	hl
+	pop	hl
+	ld	iy, 0
+	ld	hl, (ix - 31)
+	ld	(ix - 19), hl
+	ld	hl, (ix - 6)
+BB1_14:
+	ld	(ix - 22), hl
+BB1_15:
+	ld	bc, (ix - 3)
+BB1_16:
+	inc	bc
+	jp	BB1_2
+BB1_17:
+	ld	a, (_video_scale_factor)
+	or	a, a
+	sbc	hl, hl
+	ld	l, a
+	call	__imulu
+	ld	(ix - 28), hl
+	jr	BB1_15
+BB1_18:
+	call	_clock
+	ld	bc, (ix - 9)
+	ld	a, (ix - 10)
+	call	__lsub
+	ld	bc, 1000
+	ld	iy, (ix - 13)
+	ld	a, iyh
+	call	__lmulu
+	push	hl
+	pop	bc
+	ld	a, e
+	ld	l, 15
+	call	__lshru
+	ld	hl, (ix - 16)
+	or	a, a
+	sbc	hl, bc
+	push	hl
+	pop	de
+	ld	bc, 1
+	or	a, a
+	sbc	hl, bc
+	call	pe, __setflag
+	jp	m, BB1_20
+	ex	de, hl
+	ld	bc, 1000
+	call	__imulu
+	push	hl
+	call	_usleep
+	pop	hl
+BB1_20:
+	ld	hl, (ix - 3)
+	inc	hl
+	ld	(ix - 3), hl
+	ld	a, (ix - 6)
+	cp	a, -2
+	jp	nz, BB1_1
+	ld	sp, ix
+	pop	ix
+	ret
+	section	.text,"ax",@progbits
+	section	.rodata,"a",@progbits
+	private	JTI1_0
+JTI1_0:
+	dl	BB1_6
+	dl	BB1_17
+	dl	BB1_7
+	dl	BB1_8
+
+	section	.text,"ax",@progbits
+	public	_main
+_main:
+	ld	hl, -3
+	call	__frameset
+	call	_gfx_Begin
+	call	_retrieve_data_from_video
+	bit	0, a
+	jr	z, BB2_4
+	ld	hl, _.str.4
+	ld	de, 5
+	push	de
+	push	de
+	push	hl
+	call	_gfx_PrintStringXY
+	pop	hl
+	pop	hl
+	pop	hl
+	ld	hl, 15
+	push	hl
+	ld	hl, 5
+	push	hl
+	ld	hl, _.str.5
+	push	hl
+	call	_gfx_PrintStringXY
+	pop	hl
+	pop	hl
+	pop	hl
+BB2_2:
+	call	_os_GetCSC
+	or	a, a
+	jr	z, BB2_2
+	call	_begin_decode
+	or	a, a
+	jr	BB2_7
+BB2_4:
+	ld	hl, _.str
+	ld	de, 5
+	push	de
+	push	de
+	push	hl
+	call	_gfx_PrintStringXY
+	pop	hl
+	pop	hl
+	pop	hl
+	ld	hl, 15
+	push	hl
+	ld	hl, 5
+	push	hl
+	ld	hl, _.str.1
+	push	hl
+	call	_gfx_PrintStringXY
+	pop	hl
+	pop	hl
+	pop	hl
+	ld	hl, 25
+	push	hl
+	ld	hl, 5
+	push	hl
+	ld	hl, _.str.2
+	push	hl
+	call	_gfx_PrintStringXY
+	pop	hl
+	pop	hl
+	pop	hl
+	ld	hl, 45
+	push	hl
+	ld	hl, 5
+	push	hl
+	ld	hl, _.str.3
+	push	hl
+	call	_gfx_PrintStringXY
+	pop	hl
+	pop	hl
+	pop	hl
+BB2_5:
+	call	_os_GetCSC
+	or	a, a
+	jr	z, BB2_5
+	scf
+BB2_7:
+	sbc	hl, hl
+	ld	(ix - 3), hl
+	call	_gfx_End
+	ld	hl, (ix - 3)
+	ld	sp, ix
+	pop	ix
+	ret
+	section	.text,"ax",@progbits
+
+	section	.data,"aw",@progbits
+	public	_video_bin
+_video_bin:
+	db	"84VIDˇãévyàêv", 26, "y", 26, "Ü", 26, "ë", 26, "QRvyÖìQRvyÖåéìQRvxÑâèìQRvxÉáêîQSvxÅÜëîI O Q S v y } Ü ë ï I!O!Q!S!v!y!}!Ö!í!ï!H""P""R""T""v""y""}""Ü""í""ï""H#P#R#T#c#e#w#y#}#Ç#Ñ#á#ì#ï#G$P$R$T$c$f$w$y$~$Ä$Ñ$á$ì$ñ$E%P%R%T%c%f%w%y%~%Ä%Ñ%á%ì%ñ%D&P&R&T&c&f&w&y&~&&Ñ&á&ì&ñ&B'P'R'T'd'f'w'z'~''Ö'á'î'ñ'A(I(M(P(R(U(d(f(i(l(w(z(~((Ö(à(î(ñ(?)E)M)P)R)U)d)f)i)l)x)z)~))Ö)à)î)ñ)>*E*M*O*S*U*d*f*i*m*x*z*~**Ö*à*î*ñ*>+C+M+O+S+U+d+f+i+m+x+z+~++Ü+à+î+ñ+>,B,L,O,S,U,d,g,j,n,x,z,~,,Ü,à,î,ó,=-A-L-O-S-U-d-g-k-n-x-z-~--Ü-â-î-ó-=.@.K.N.S.U.e.g.l.o.x.z.~..Ü.â.ï.ó.=/@/J/N/S/U/e/g/l/o/x/{/~/Ä/Ü/â/ï/ó/=0?0J0N0S0U0e0g0l0o0x0{0~0Ä0Ü0â0ï0ó0=1?1J1M1S1U1e1g1m1o1x1{1~1Ä1á1â1î1ó1=2?2J2L2S2U2e2g2m2p2y2{22Ä2á2â2î2ó2=3?3I3L3S3V3e3h3m3p3y3{33Ä3á3â3î3ñ3=4@4H4L4S4V4e4h4m4p4y4{44Ä4á4â4î4ñ4=5@5H5L5S5V5e5h5n5p5y5{55Ä5á5â5î5ñ5=6A6H6K6T6V6f6h6n6p6y6{66Å6á6â6î6ñ6>7B7G7J7T7V7f7h7n7p7y7{77Å7á7ä7î7ñ7?8C8F8J8T8V8f8h8o8p8y8{88Å8á8ä8î8ñ8?9J9T9V9f9h9o9q9y9{99Ç9á9ä9ì9ñ9?:I:T:V:f:h:o:q:y:{::Ç:à:ä:ì:ñ:A;H;T;V;f;h;o;q;y;{;;Ç;à;ä;ì;ñ;C<N<T<V<f<i<p<r<y<{<Ä<Ç<à<ä<ì<ï<C=R=T=V=f=i=p=r=y={=Ä=Ç=à=ä=í=ï=C>W>f>i>p>r>y>{>Ä>Ç>à>ä>í>ï>C?W?g?i?p?r?y?{?Ä?Ç?à?ä?í?ï?C@E@M@Y@c@i@p@s@y@{@Ä@Ç@à@ã@í@î@BAEARA[AaAiApAtAyA{AÄAÇAàAãAëAîABBDBTB\B^BjBqBtByB{BÄBÉBâBãBëBîBACDCUCjCrCtCyC{CÄCÉDâCåFëCíFADCDVDeDgDjDrDtDyD{DêDêFAECEXEaEhEjErEtEyE{EÅEÑEAFCFZF_FhFjFrFuFyF{FÅFÑFéFèFAGCGZG]GhGjGrGvGyG{GÇGÑGâGåGéGíGAHCHZH]HhHjHsHvHyH{HÇHÑHâHíHAICIZI]IhIjIsIvIyI{IÇIÑIäIëIAJCJZJ]JhJjJtJwJyJ{JÇJÑJäJêJAKCKZKZWhKkKtK{KÇKÖKäKèKBLCLhLkLuL{LÇLÖLãLéLBMDMhMkMuM{MÇMÖMãMçMBNDNiNkNvN{NÉNÖNBOEOYOYPiOkOvO{OÉOÖOCPFPiPkPvP{PÉPÖPCQGQYQYQiQkQvQzQÉQÖQDRHRXRYRiRkRvRzRÉRÖRDSHSXSYSiSkSwSzSDTITXTYTiTkTwTzTFUJUWUYUiUkUxUzUGVKVVVYVhVkVGWLWVWYWhWkWGXLXVXYXhXkXIYOYUYXYhYkYJZXZhZkZK[W[K\W\N]V]Q^S^êpípèqíqèrírésísétítåuíuåvëvâwèwxéxNyRyxyçy8zRz\z`zuzåz8{R{\{a{u{ä{5|R|[|a|p|Ñ|5}R}[}a}n}z}Ç}Ñ}5~9~C~D~O~Q~Y~^~l~v~Ç~Ñ~69CDOPY^jvÇÑCÄDÄYÄ]ÄjÄsÄÇÄÑÄCÅDÅXÅ\ÅhÅpÅÇÅÑÅCÇDÇXÇ[ÇgÇnÇÇÇÑÇCÉEÉXÉZÉfÉkÉÇÉÖÉCÑEÑWÑZÑeÑkÑÇÑÖÑCÖEÖWÖZÖeÖjÖÇÖÖÖCÜEÜWÜZÜeÜhÜÉÜÖÜCáEáVáYáeáháÉáÖáCàEàUàYàeàgàÉàÜàCâEâUâYâeâiâÉâÜâCäEäUäXäeäiäÉäÜäCãEãUãWãeãkãÑãÜãCåEåUåWåfånåÑåÜåCçEçTçWç[ç]çhçrçÑçÜçCéEéTé]éhéxéÑéáéCèEèTè]èjèxèÑèáèCêEêSê]êmêzêÑêáêCëEëRë\ëqë{ëÖëáëCíFíRíWíwí|íÖíàíCìFìRìWìwì|ìÖìàìCîFîRîVîyî|îÖîàîDïFïSïUïzï|ïÜïàïDñFñSñUñzñ|ñÜñàñDóGóSóUóeógóyó|óÜóàóDòGòSòUòeògòxò|òÜòâòDôGôSôUôeôgôxô|ôÜôâôEöGöSöUödögöxö|öÜöâöEõGõSõUõdõgõvõzõáõäõEúGúSúUúcúfúsúzúáúäúEùHùSùUùcùfùhùzùáùäùEûHûSûUûbûfûhûyûáûäûEüHüSüUübüeühüxüáüäüF†H†S†V†a†d†h†t†á†ä†F°H°S°V°a°d°F¢I¢T¢V¢`¢d¢F£I£T£V£`£c£F§I§T§W§^§b§F•J•T•a•G¶J¶U¶a¶GßJßUß`ßG®J®V®_®G©J©ˇNQN", 26, "R", 26, "ç", 26, "í", 26, "NRstãìNRrtãìPRruãîQSrvâéëïQSsvâçëïQ S s v á å ë ï R!S!s!v!á!å!ì!ï!R""T""t""w""á""ã""ì""ñ""C#I#R#T#t#w#Å#Ñ#Ü#ä#ì#ó#C$I$R$T$a$c$u$w$Å$â$î$ó$C%I%R%U%a%c%u%x%|%}%Å%â%î%ó%C&I&R&U&a&c&u&x&|&~&Å&à&ï&ó&A'G'R'U'a'c'u'x'|'~'Ç'á'ï'ó'>(G(S(U(a(c(v(x(|(~(É(Ü(ï(ó(<)G)S)U)a)c)v)y)|))Å)Ü)ï)ò)9*H*S*U*a*c*v*y*|**Å*á*ï*ò*9+B+E+H+S+U+a+c+v+y+|+á+ï+ò+8,?,E,H,S,U,a,d,w,z,},á,ñ,ò,7-=-F-H-S-U-a-d-f-i-w-z-}-Ç-Ö-á-ñ-ò-6.:.E.H.S.U.b.d.f.j.x.z.}.Å.Ö.à.ñ.ò.6/:/E/H/S/U/b/d/f/k/x/z/}/Å/Ö/à/ñ/ò/6090E0H0S0U0b0d0f0k0x0z0}00Ö0à0ñ0ò06181E1G1S1U1b1d1h1l1x1z1~1Å4Ü1à1ñ1ò16282E2G2S2U2b2e2h2m2x2z2Ü2â2ñ2ò26383E3G3S3U3b3e3i3m3x3{3Ü3â3ñ3ò36494E4G4S4U4c4e4i4m4x4{4Ü4â4ñ4ò46595E5G5S5U5c5e5j5n5x5{55Ç6á5â5ñ5ò566:6E6G6S6U6c6e6k6n6y6{6á6â6ñ6ò667<7E7G7S7U7c7e7l7o7y7{77Ç7á7ä7ñ7ò778>8D8G8S8U8c8f8l8p8y8|8Ä8É8á8ä8ñ8ò879@9D9G9S9U9c9f9l9p9y9|9Ä9É9á9ä9ï9ò98:@:D:G:S:U:c:f:m:p:y:|:Ä:É:à:ä:ï:ò::;F;S;U;d;f;n;p;z;|;Å;É;à;ã;ï;ò;=<V<d<f<o<q<z<|<Å<É<à<ã<ï<ó<?=W=c=g=o=q=z=|=Å=Ñ=â=å=î=ó=?>Y>b>g>o>r>z>}@Å>Ö>â>å>î>ó>B?Y?a?g?p?r?Å?Ö?â?å?î?ó?C@F@T@g@p@r@Ç@Ö@ä@çCî@ñ@CAEAUAgApAsA{A}AÉAÜBîAñACBEBVBbBeBgBpBsB{B}BìBñBCCECVCbCeChCqCtC{C~FÉCÜCìCïECDEDVDYDeDhDqDtDÉDÜDãDéDCEEEVEYEeEhEqEuEÑEáEãEéEíEíECFEFWFYFfFhFrFuFÑFàFåFéFëFïFCGEGWGYGfGhGsGvG{G~GÖGàGåGéGêGîGCHEHWHYHfHiHsHvH{H~HÖHàHåHîHCIEIWIYIfIiIsIvI|I~IÜIàIåIìICJEJWJYJfJiJtJwJ|J~JÜJâJçJìJCKEKWKYKgKiKtKwK{K~KÜKâKçKíKCLFLVLYLgLiLuLxL{L~LÜLâLCMGMVMYMgMjMuM}MÜMâMCNGNVNYNgNjNuN}NÜNâNCOHOUOXOgOjOvO}ODPKPTPXPhPkPvP|PEQXQhQkQwQ{RFRXRhRkRGSWSiSkSJTVTiTlTOURUiUlUjVmVjWmWjXmXjYnYkZnZk[n[k\m\êpëpèqëqèrërésësçtëtãuëuãvêvNwQwyw|wáwêwIxQxyx|xxéxEyQy^yayyyåy>z@zCzQz]zazwzãz>{@{C{Q{]{a{w{à{>|J|[|a|r|Ç|+}4}>}F}Z}`}p}}}Ä}É}+~C~Y~_~m~x~Ä~É~+CW^lxÅÉ+ÄBÄWÄ]ÄlÄtÄÅÄÉÄ3ÅAÅVÅ[ÅjÅpÅÅÅÉÅ?ÇAÇTÇZÇhÇoÇÅÇÉÇ?ÉAÉSÉXÉgÉmÉÅÉÉÉ?ÑAÑSÑXÑgÑmÑÅÑÑÑ?ÖBÖRÖWÖgÖkÖÅÖÑÖ?ÜBÜRÜVÜfÜjÜÅÜÑÜ@áBáRáUáfáiáÇáÑá@àBàRàTàfàhàÇàÖà@âBâRâTâfâjâÇâÖâ@äBäRäTäfäjäÇäÖä@ãBãRãTãfãpãÉãÜã@åCåRåSågåtåÉåÜå@çCçRçSçYç^çhçxçÑçÜç@éCéRéSéVé^éhézéÑéÜéAèCèRèSèVè^èoèzèÑèÜèBêCêRê^êsê{êÑêáêBëDëRë[ëwë|ëÑëáëBíDíRíWíxí|íÖíáí™í≠íBìDìRìWìxì|ìÖìàì®ì≠ìCîDîRîUîzî|îÖîàî®î≠îCïEïRïTïyï|ïÖïàï®ïÆïCñEñRñTñxñ|ñÜñàñ®ñÆñCóEóRóTówó{óÜóâó®óÆóCòEòRòTòuò{òÜòâò®òÆòCôEôRôTôuôzôÜôâô©ôÆôCöFöRöUösöyöáöâö©ö≠öCõFõRõUõeõgõpõxõáõäõ©õ¨õDúFúSúUúeúvúáúäúDùFùSùUùeùvùáùãùDûFûSûUûeûtûàûãûDüGüSüUüdüqüàüãüD†H†S†V†c†g†à†ã†E°H°S°V°a°g°F¢I¢T¢W¢a¢g¢F£I£T£W£a£e£F§I§T§X§_§d§G•J•T•[•]•b•G¶K¶U¶a¶GßKßUßaßH®K®W®`®H©K©Y©^©I™K™ˇãévyàêv", 26, "y", 26, "Ü", 26, "ë", 26, "QRvyÖìQRvyÖåéìQRvxÑâèìQRvxÉáêîQSvxÅÜëîI O Q S v y } Ü ë ï I!O!Q!S!v!y!}!Ö!í!ï!H""P""R""T""v""y""}""Ü""í""ï""H#P#R#T#c#e#w#y#}#Ç#Ñ#á#ì#ï#G$P$R$T$c$f$w$y$~$Ä$Ñ$á$ì$ñ$E%P%R%T%c%f%w%y%~%Ä%Ñ%á%ì%ñ%D&P&R&T&c&f&w&y&~&&Ñ&á&ì&ñ&B'P'R'T'd'f'w'z'~''Ö'á'î'ñ'A(I(M(P(R(U(d(f(i(l(w(z(~((Ö(à(î(ñ(?)E)M)P)R)U)d)f)i)l)x)z)~))Ö)à)î)ñ)>*E*M*O*S*U*d*f*i*m*x*z*~**Ö*à*î*ñ*>+C+M+O+S+U+d+f+i+m+x+z+~++Ü+à+î+ñ+>,B,L,O,S,U,d,g,j,n,x,z,~,,Ü,à,î,ó,=-A-L-O-S-U-d-g-k-n-x-z-~--Ü-â-î-ó-=.@.K.N.S.U.e.g.l.o.x.z.~..Ü.â.ï.ó.=/@/J/N/S/U/e/g/l/o/x/{/~/Ä/Ü/â/ï/ó/=0?0J0N0S0U0e0g0l0o0x0{0~0Ä0Ü0â0ï0ó0=1?1J1M1S1U1e1g1m1o1x1{1~1Ä1á1â1î1ó1=2?2J2L2S2U2e2g2m2p2y2{22Ä2á2â2î2ó2=3?3I3L3S3V3e3h3m3p3y3{33Ä3á3â3î3ñ3=4@4H4L4S4V4e4h4m4p4y4{44Ä4á4â4î4ñ4=5@5H5L5S5V5e5h5n5p5y5{55Ä5á5â5î5ñ5=6A6H6K6T6V6f6h6n6p6y6{66Å6á6â6î6ñ6>7B7G7J7T7V7f7h7n7p7y7{77Å7á7ä7î7ñ7?8C8F8J8T8V8f8h8o8p8y8{88Å8á8ä8î8ñ8?9J9T9V9f9h9o9q9y9{99Ç9á9ä9ì9ñ9?:I:T:V:f:h:o:q:y:{::Ç:à:ä:ì:ñ:A;H;T;V;f;h;o;q;y;{;;Ç;à;ä;ì;ñ;C<N<T<V<f<i<p<r<y<{<Ä<Ç<à<ä<ì<ï<C=R=T=V=f=i=p=r=y={=Ä=Ç=à=ä=í=ï=C>W>f>i>p>r>y>{>Ä>Ç>à>ä>í>ï>C?W?g?i?p?r?y?{?Ä?Ç?à?ä?í?ï?C@E@M@Y@c@i@p@s@y@{@Ä@Ç@à@ã@í@î@BAEARA[AaAiApAtAyA{AÄAÇAàAãAëAîABBDBTB\B^BjBqBtByB{BÄBÉBâBãBëBîBACDCUCjCrCtCyC{CÄCÉDâCåFëCíFADCDVDeDgDjDrDtDyD{DêDêFAECEXEaEhEjErEtEyE{EÅEÑEAFCFZF_FhFjFrFuFyF{FÅFÑFéFèFAGCGZG]GhGjGrGvGyG{GÇGÑGâGåGéGíGAHCHZH]HhHjHsHvHyH{HÇHÑHâHíHAICIZI]IhIjIsIvIyI{IÇIÑIäIëIAJCJZJ]JhJjJtJwJyJ{JÇJÑJäJêJAKCKZKZWhKkKtK{KÇKÖKäKèKBLCLhLkLuL{LÇLÖLãLéLBMDMhMkMuM{MÇMÖMãMçMBNDNiNkNvN{NÉNÖNBOEOYOYPiOkOvO{OÉOÖOCPFPiPkPvP{PÉPÖPCQGQYQYQiQkQvQzQÉQÖQDRHRXRYRiRkRvRzRÉRÖRDSHSXSYSiSkSwSzSDTITXTYTiTkTwTzTFUJUWUYUiUkUxUzUGVKVVVYVhVkVGWLWVWYWhWkWGXLXVXYXhXkXIYOYUYXYhYkYJZXZhZkZK[W[K\W\N]V]Q^S^êpípèqíqèrírésísétítåuíuåvëvâwèwxéxNyRyxyçy8zRz\z`zuzåz8{R{\{a{u{ä{5|R|[|a|p|Ñ|5}R}[}a}n}z}Ç}Ñ}5~9~C~D~O~Q~Y~^~l~v~Ç~Ñ~69CDOPY^jvÇÑCÄDÄYÄ]ÄjÄsÄÇÄÑÄCÅDÅXÅ\ÅhÅpÅÇÅÑÅCÇDÇXÇ[ÇgÇnÇÇÇÑÇCÉEÉXÉZÉfÉkÉÇÉÖÉCÑEÑWÑZÑeÑkÑÇÑÖÑCÖEÖWÖZÖeÖjÖÇÖÖÖCÜEÜWÜZÜeÜhÜÉÜÖÜCáEáVáYáeáháÉáÖáCàEàUàYàeàgàÉàÜàCâEâUâYâeâiâÉâÜâCäEäUäXäeäiäÉäÜäCãEãUãWãeãkãÑãÜãCåEåUåWåfånåÑåÜåCçEçTçWç[ç]çhçrçÑçÜç çŒçCéEéTé]éhéxéÑéáé…éœéCèEèTè]èjèxèÑèáè…èœèCêEêSê]êmêzêÑêáê»ê–êCëEëRë\ëqë{ëÖëáë»ë–ëCíFíRíWíwí|íÖíàí•íÆí»í–íCìFìRìWìwì|ìÖìàì•ìØì»ì–ìCîFîRîVîyî|îÖîàî•îØî»î–îDïFïSïUïzï|ïÜïàï•ïØï»ï–ïDñFñSñUñzñ|ñÜñàñ•ñØñ»ñ–ñDóGóSóUóeógóyó|óÜóàó¶óØó…óœóDòGòSòUòeògòxò|òÜòâò¶òØò…òœòDôGôSôUôeôgôxô|ôÜôâô¶ôØôEöGöSöUödögöxö|öÜöâö¶ö≠öEõGõSõUõdõgõvõzõáõäõ©õ¨õEúGúSúUúcúfúsúzúáúäúEùHùSùUùcùfùhùzùáùäùEûHûSûUûbûfûhûyûáûäûEüHüSüUübüeühüxüáüäüF†H†S†V†a†d†h†t†á†ä†F°H°S°V°a°d°F¢I¢T¢V¢`¢d¢F£I£T£V£`£c£F§I§T§W§^§b§F•J•T•a•G¶J¶U¶a¶GßJßUß`ßG®J®V®_®G©J©ˇNQN", 26, "R", 26, "ç", 26, "í", 26, "NRstãìNRrtãìPRruãîQSrvâéëïQSsvâçëïQ S s v á å ë ï R!S!s!v!á!å!ì!ï!R""T""t""w""á""ã""ì""ñ""C#I#R#T#t#w#Å#Ñ#Ü#ä#ì#ó#C$I$R$T$a$c$u$w$Å$â$î$ó$C%I%R%U%a%c%u%x%|%}%Å%â%î%ó%C&I&R&U&a&c&u&x&|&~&Å&à&ï&ó&A'G'R'U'a'c'u'x'|'~'Ç'á'ï'ó'>(G(S(U(a(c(v(x(|(~(É(Ü(ï(ó(<)G)S)U)a)c)v)y)|))Å)Ü)ï)ò)9*H*S*U*a*c*v*y*|**Å*á*ï*ò*9+B+E+H+S+U+a+c+v+y+|+á+ï+ò+8,?,E,H,S,U,a,d,w,z,},á,ñ,ò,7-=-F-H-S-U-a-d-f-i-w-z-}-Ç-Ö-á-ñ-ò-6.:.E.H.S.U.b.d.f.j.x.z.}.Å.Ö.à.ñ.ò.6/:/E/H/S/U/b/d/f/k/x/z/}/Å/Ö/à/ñ/ò/6090E0H0S0U0b0d0f0k0x0z0}00Ö0à0ñ0ò06181E1G1S1U1b1d1h1l1x1z1~1Å4Ü1à1ñ1ò16282E2G2S2U2b2e2h2m2x2z2Ü2â2ñ2ò26383E3G3S3U3b3e3i3m3x3{3Ü3â3ñ3ò36494E4G4S4U4c4e4i4m4x4{4Ü4â4ñ4ò46595E5G5S5U5c5e5j5n5x5{55Ç6á5â5ñ5ò566:6E6G6S6U6c6e6k6n6y6{6á6â6ñ6ò667<7E7G7S7U7c7e7l7o7y7{77Ç7á7ä7ñ7ò778>8D8G8S8U8c8f8l8p8y8|8Ä8É8á8ä8ñ8ò879@9D9G9S9U9c9f9l9p9y9|9Ä9É9á9ä9ï9ò98:@:D:G:S:U:c:f:m:p:y:|:Ä:É:à:ä:ï:ò::;F;S;U;d;f;n;p;z;|;Å;É;à;ã;ï;ò;=<V<d<f<o<q<z<|<Å<É<à<ã<ï<ó<?=W=c=g=o=q=z=|=Å=Ñ=â=å=î=ó=?>Y>b>g>o>r>z>}@Å>Ö>â>å>î>ó>B?Y?a?g?p?r?Å?Ö?â?å?î?ó?C@F@T@g@p@r@Ç@Ö@ä@çCî@ñ@CAEAUAgApAsA{A}AÉAÜBîAñACBEBVBbBeBgBpBsB{B}BìBñBCCECVCbCeChCqCtC{C~FÉCÜCìCïECDEDVDYDeDhDqDtDÉDÜDãDéDCEEEVEYEeEhEqEuEÑEáEãEéEíEíECFEFWFYFfFhFrFuFÑFàFåFéFëFïFCGEGWGYGfGhGsGvG{G~GÖGàGåGéGêGîGCHEHWHYHfHiHsHvH{H~HÖHàHåHîHCIEIWIYIfIiIsIvI|I~IÜIàIåIìICJEJWJYJfJiJtJwJ|J~JÜJâJçJìJCKEKWKYKgKiKtKwK{K~KÜKâKçKíKCLFLVLYLgLiLuLxL{L~LÜLâLCMGMVMYMgMjMuM}MÜMâMCNGNVNYNgNjNuN}NÜNâNCOHOUOXOgOjOvO}ODPKPTPXPhPkPvP|PEQXQhQkQwQ{RFRXRhRkRGSWSiSkSJTVTiTlTOURUiUlUjVmVjWmWjXmXjYnYkZnZk[n[k\m\êpëpèqëqèrërésësçtëtãuëuãvêvNwQwyw|wáwêwIxQxyx|xxéxEyQy^yayyyåy>z@zCzQz]zazwzãz>{@{C{Q{]{a{w{à{>|J|[|a|r|Ç|+}4}>}F}Z}`}p}}}Ä}É}+~C~Y~_~m~x~Ä~É~+CW^lxÅÉ+ÄBÄWÄ]ÄlÄtÄÅÄÉÄ3ÅAÅVÅ[ÅjÅpÅÅÅÉÅ?ÇAÇTÇZÇhÇoÇÅÇÉÇ?ÉAÉSÉXÉgÉmÉÅÉÉÉ?ÑAÑSÑXÑgÑmÑÅÑÑÑ?ÖBÖRÖWÖgÖkÖÅÖÑÖ?ÜBÜRÜVÜfÜjÜÅÜÑÜ@áBáRáUáfáiáÇáÑá@àBàRàTàfàhàÇàÖà@âBâRâTâfâjâÇâÖâ@äBäRäTäfäjäÇäÖä@ãBãRãTãfãpãÉãÜã@åCåRåSågåtåÉåÜå@çCçRçSçYç^çhçxçÑçÜçÀçŒç@éCéRéSéVé^éhézéÑéÜé»é–éAèCèRèSèVè^èoèzèÑèÜè»è–èBêCêRê^êsê{êÑêáê∆ê–êBëDëRë[ëwë|ëÑëáë∆ë—ëBíDíRíWíxí|íÖíáíßí≠í∆í—íBìDìRìWìxì|ìÖìàì•ìÆì∆ì—ìCîDîRîUîzî|îÖîàî•îÆî∆î—îCïEïRïTïyï|ïÖïàï£ïØï«ï—ïCñEñRñTñxñ|ñÜñàñ£ñØñ»ñ–ñCóEóRóTówó{óÜóâó£óØó…óœóCòEòRòTòuò{òÜòâò£òØò…òœòCôEôRôTôuôzôÜôâô£ôØôÀôœôCöFöRöUösöyöáöâö•öØöCõFõRõUõeõgõpõxõáõäõßõ©õDúFúSúUúeúvúáúäúDùFùSùUùeùvùáùãùDûFûSûUûeûtûàûãûDüGüSüUüdüqüàüãüD†H†S†V†c†g†à†ã†E°H°S°V°a°g°F¢I¢T¢W¢a¢g¢F£I£T£W£a£e£F§I§T§X§_§d§G•J•T•[•]•b•G¶K¶U¶a¶GßKßUßaßH®K®W®`®H©K©Y©^©I™K™ú™û™ú´û´ú¨ü¨ú≠ü≠ùÆ†ÆùØ°Øù∞¢∞û±£±û≤£≤ü≥£≥†¥£¥ˇãévyàêv", 26, "y", 26, "Ü", 26, "ë", 26, "QRvyÖìQRvyÖåéìQRvxÑâèìQRvxÉáêîQSvxÅÜëîI O Q S v y } Ü ë ï I!O!Q!S!v!y!}!Ö!í!ï!H""P""R""T""v""y""}""Ü""í""ï""H#P#R#T#c#e#w#y#}#Ç#Ñ#á#ì#ï#G$P$R$T$c$f$w$y$~$Ä$Ñ$á$ì$ñ$E%P%R%T%c%f%w%y%~%Ä%Ñ%á%ì%ñ%D&P&R&T&c&f&w&y&~&&Ñ&á&ì&ñ&B'P'R'T'd'f'w'z'~''Ö'á'î'ñ'A(I(M(P(R(U(d(f(i(l(w(z(~((Ö(à(î(ñ(?)E)M)P)R)U)d)f)i)l)x)z)~))Ö)à)î)ñ)>*E*M*O*S*U*d*f*i*m*x*z*~**Ö*à*î*ñ*>+C+M+O+S+U+d+f+i+m+x+z+~++Ü+à+î+ñ+>,B,L,O,S,U,d,g,j,n,x,z,~,,Ü,à,î,ó,=-A-L-O-S-U-d-g-k-n-x-z-~--Ü-â-î-ó-=.@.K.N.S.U.e.g.l.o.x.z.~..Ü.â.ï.ó.=/@/J/N/S/U/e/g/l/o/x/{/~/Ä/Ü/â/ï/ó/=0?0J0N0S0U0e0g0l0o0x0{0~0Ä0Ü0â0ï0ó0=1?1J1M1S1U1e1g1m1o1x1{1~1Ä1á1â1î1ó1=2?2J2L2S2U2e2g2m2p2y2{22Ä2á2â2î2ó2=3?3I3L3S3V3e3h3m3p3y3{33Ä3á3â3î3ñ3=4@4H4L4S4V4e4h4m4p4y4{44Ä4á4â4î4ñ4=5@5H5L5S5V5e5h5n5p5y5{55Ä5á5â5î5ñ5=6A6H6K6T6V6f6h6n6p6y6{66Å6á6â6î6ñ6>7B7G7J7T7V7f7h7n7p7y7{77Å7á7ä7î7ñ7?8C8F8J8T8V8f8h8o8p8y8{88Å8á8ä8î8ñ8?9J9T9V9f9h9o9q9y9{99Ç9á9ä9ì9ñ9?:I:T:V:f:h:o:q:y:{::Ç:à:ä:ì:ñ:A;H;T;V;f;h;o;q;y;{;;Ç;à;ä;ì;ñ;C<N<T<V<f<i<p<r<y<{<Ä<Ç<à<ä<ì<ï<C=R=T=V=f=i=p=r=y={=Ä=Ç=à=ä=í=ï=C>W>f>i>p>r>y>{>Ä>Ç>à>ä>í>ï>C?W?g?i?p?r?y?{?Ä?Ç?à?ä?í?ï?C@E@M@Y@c@i@p@s@y@{@Ä@Ç@à@ã@í@î@BAEARA[AaAiApAtAyA{AÄAÇAàAãAëAîABBDBTB\B^BjBqBtByB{BÄBÉBâBãBëBîBACDCUCjCrCtCyC{CÄCÉDâCåFëCíFADCDVDeDgDjDrDtDyD{DêDêFAECEXEaEhEjErEtEyE{EÅEÑEAFCFZF_FhFjFrFuFyF{FÅFÑFéFèFAGCGZG]GhGjGrGvGyG{GÇGÑGâGåGéGíGAHCHZH]HhHjHsHvHyH{HÇHÑHâHíHAICIZI]IhIjIsIvIyI{IÇIÑIäIëIAJCJZJ]JhJjJtJwJyJ{JÇJÑJäJêJAKCKZKZWhKkKtK{KÇKÖKäKèKBLCLhLkLuL{LÇLÖLãLéLBMDMhMkMuM{MÇMÖMãMçMBNDNiNkNvN{NÉNÖNBOEOYOYPiOkOvO{OÉOÖOCPFPiPkPvP{PÉPÖPCQGQYQYQiQkQvQzQÉQÖQDRHRXRYRiRkRvRzRÉRÖRDSHSXSYSiSkSwSzSDTITXTYTiTkTwTzTFUJUWUYUiUkUxUzUGVKVVVYVhVkVGWLWVWYWhWkWGXLXVXYXhXkXIYOYUYXYhYkYJZXZhZkZK[W[K\W\N]V]Q^S^êpípèqíqèrírésísétítåuíuåvëvâwèwxéxNyRyxyçy8zRz\z`zuzåz8{R{\{a{u{ä{5|R|[|a|p|Ñ|5}R}[}a}n}z}Ç}Ñ}5~9~C~D~O~Q~Y~^~l~v~Ç~Ñ~69CDOPY^jvÇÑCÄDÄYÄ]ÄjÄsÄÇÄÑÄCÅDÅXÅ\ÅhÅpÅÇÅÑÅCÇDÇXÇ[ÇgÇnÇÇÇÑÇCÉEÉXÉZÉfÉkÉÇÉÖÉCÑEÑWÑZÑeÑkÑÇÑÖÑCÖEÖWÖZÖeÖjÖÇÖÖÖCÜEÜWÜZÜeÜhÜÉÜÖÜCáEáVáYáeáháÉáÖáCàEàUàYàeàgàÉàÜàCâEâUâYâeâiâÉâÜâCäEäUäXäeäiäÉäÜäCãEãUãWãeãkãÑãÜãCåEåUåWåfånåÑåÜå åÃåCçEçTçWç[ç]çhçrçÑçÜç…çÕçCéEéTé]éhéxéÑéáé»éŒéCèEèTè]èjèxèÑèáè»èŒèCêEêSê]êmêzêÑêáê»êœêCëEëRë\ëqë{ëÖëáë©ëÆë»ëœëCíFíRíWíwí|íÖíàíßíØí»íœíCìFìRìWìwì|ìÖìàì§ìØì»ìœìCîFîRîVîyî|îÖîàî§îØî»îœîDïFïSïUïzï|ïÜïàï¢ïØï»ïŒïDñFñSñUñzñ|ñÜñàñ¢ñØñ…ñŒñDóGóSóUóeógóyó|óÜóàó¢óÆó óŒóDòGòSòUòeògòxò|òÜòâò¢òÆò òŒòDôGôSôUôeôgôxô|ôÜôâô¢ôÆôEöGöSöUödögöxö|öÜöâö§ö≠öEõGõSõUõdõgõvõzõáõäõ®õ≠õEúGúSúUúcúfúsúzúáúäúEùHùSùUùcùfùhùzùáùäùEûHûSûUûbûfûhûyûáûäûEüHüSüUübüeühüxüáüäüF†H†S†V†a†d†h†t†á†ä†F°H°S°V°a°d°F¢I¢T¢V¢`¢d¢F£I£T£V£`£c£F§I§T§W§^§b§F•J•T•a•G¶J¶U¶a¶GßJßUß`ßúßûßG®J®V®_®ú®û®G©J©ú©û©ú™ü™ù´ü´ù¨†¨ù≠†≠ùÆ°ÆûØ°Øû∞¢∞ü±¢±ü≤¢≤ü≥£≥†¥§¥†µ•µ†∂ß∂°∑ß∑¢∏®∏§π©π•∫¨∫•ª¨ª¶º¨ºßΩ¨ΩˇNQN", 26, "R", 26, "ç", 26, "í", 26, "NRstãìNRrtãìPRruãîQSrvâéëïQSsvâçëïQ S s v á å ë ï R!S!s!v!á!å!ì!ï!R""T""t""w""á""ã""ì""ñ""C#I#R#T#t#w#Å#Ñ#Ü#ä#ì#ó#C$I$R$T$a$c$u$w$Å$â$î$ó$C%I%R%U%a%c%u%x%|%}%Å%â%î%ó%C&I&R&U&a&c&u&x&|&~&Å&à&ï&ó&A'G'R'U'a'c'u'x'|'~'Ç'á'ï'ó'>(G(S(U(a(c(v(x(|(~(É(Ü(ï(ó(<)G)S)U)a)c)v)y)|))Å)Ü)ï)ò)9*H*S*U*a*c*v*y*|**Å*á*ï*ò*9+B+E+H+S+U+a+c+v+y+|+á+ï+ò+8,?,E,H,S,U,a,d,w,z,},á,ñ,ò,7-=-F-H-S-U-a-d-f-i-w-z-}-Ç-Ö-á-ñ-ò-6.:.E.H.S.U.b.d.f.j.x.z.}.Å.Ö.à.ñ.ò.6/:/E/H/S/U/b/d/f/k/x/z/}/Å/Ö/à/ñ/ò/6090E0H0S0U0b0d0f0k0x0z0}00Ö0à0ñ0ò06181E1G1S1U1b1d1h1l1x1z1~1Å4Ü1à1ñ1ò16282E2G2S2U2b2e2h2m2x2z2Ü2â2ñ2ò26383E3G3S3U3b3e3i3m3x3{3Ü3â3ñ3ò36494E4G4S4U4c4e4i4m4x4{4Ü4â4ñ4ò46595E5G5S5U5c5e5j5n5x5{55Ç6á5â5ñ5ò566:6E6G6S6U6c6e6k6n6y6{6á6â6ñ6ò667<7E7G7S7U7c7e7l7o7y7{77Ç7á7ä7ñ7ò778>8D8G8S8U8c8f8l8p8y8|8Ä8É8á8ä8ñ8ò879@9D9G9S9U9c9f9l9p9y9|9Ä9É9á9ä9ï9ò98:@:D:G:S:U:c:f:m:p:y:|:Ä:É:à:ä:ï:ò::;F;S;U;d;f;n;p;z;|;Å;É;à;ã;ï;ò;=<V<d<f<o<q<z<|<Å<É<à<ã<ï<ó<?=W=c=g=o=q=z=|=Å=Ñ=â=å=î=ó=?>Y>b>g>o>r>z>}@Å>Ö>â>å>î>ó>B?Y?a?g?p?r?Å?Ö?â?å?î?ó?C@F@T@g@p@r@Ç@Ö@ä@çCî@ñ@CAEAUAgApAsA{A}AÉAÜBîAñACBEBVBbBeBgBpBsB{B}BìBñBCCECVCbCeChCqCtC{C~FÉCÜCìCïECDEDVDYDeDhDqDtDÉDÜDãDéDCEEEVEYEeEhEqEuEÑEáEãEéEíEíECFEFWFYFfFhFrFuFÑFàFåFéFëFïFCGEGWGYGfGhGsGvG{G~GÖGàGåGéGêGîGCHEHWHYHfHiHsHvH{H~HÖHàHåHîHCIEIWIYIfIiIsIvI|I~IÜIàIåIìICJEJWJYJfJiJtJwJ|J~JÜJâJçJìJCKEKWKYKgKiKtKwK{K~KÜKâKçKíKCLFLVLYLgLiLuLxL{L~LÜLâLCMGMVMYMgMjMuM}MÜMâMCNGNVNYNgNjNuN}NÜNâNCOHOUOXOgOjOvO}ODPKPTPXPhPkPvP|PEQXQhQkQwQ{RFRXRhRkRGSWSiSkSJTVTiTlTOURUiUlUjVmVjWmWjXmXjYnYkZnZk[n[k\m\êpëpèqëqèrërésësçtëtãuëuãvêvNwQwyw|wáwêwIxQxyx|xxéxEyQy^yayyyåy>z@zCzQz]zazwzãz>{@{C{Q{]{a{w{à{>|J|[|a|r|Ç|+}4}>}F}Z}`}p}}}Ä}É}+~C~Y~_~m~x~Ä~É~+CW^lxÅÉ+ÄBÄWÄ]ÄlÄtÄÅÄÉÄ3ÅAÅVÅ[ÅjÅpÅÅÅÉÅ?ÇAÇTÇZÇhÇoÇÅÇÉÇ?ÉAÉSÉXÉgÉmÉÅÉÉÉ?ÑAÑSÑXÑgÑmÑÅÑÑÑ?ÖBÖRÖWÖgÖkÖÅÖÑÖ?ÜBÜRÜVÜfÜjÜÅÜÑÜ@áBáRáUáfáiáÇáÑá@àBàRàTàfàhàÇàÖà@âBâRâTâfâjâÇâÖâ@äBäRäTäfäjäÇäÖä@ãBãRãTãfãpãÉãÜã@åCåRåSågåtåÉåÜå åÃå@çCçRçSçYç^çhçxçÑçÜç…çŒç@éCéRéSéVé^éhézéÑéÜé»éŒéAèCèRèSèVè^èoèzèÑèÜè»èŒèBêCêRê^êsê{êÑêáê»êœêBëDëRë[ëwë|ëÑëáë»ëœëBíDíRíWíxí|íÖíáí…íœíBìDìRìWìxì|ìÖìàì•ìØì…ìœìCîDîRîUîzî|îÖîàî•îØî…îœîCïEïRïTïyï|ïÖïàï•ïØï…ïœïCñEñRñTñxñ|ñÜñàñ•ñØñ…ñŒñCóEóRóTówó{óÜóâó•óØó óŒóCòEòRòTòuò{òÜòâò•òØò òŒòCôEôRôTôuôzôÜôâô•ôØôCöFöRöUösöyöáöâö¶öØöCõFõRõUõeõgõpõxõáõäõ©õÆõDúFúSúUúeúvúáúäú™ú¨ùDùFùSùUùeùvùáùãùDûFûSûUûeûtûàûãûDüGüSüUüdüqüàüãüD†H†S†V†c†g†à†ã†E°H°S°V°a°g°F¢I¢T¢W¢a¢g¢F£I£T£W£a£e£F§I§T§X§_§d§G•J•T•[•]•b•G¶K¶U¶a¶GßKßUßaßH®K®W®`®H©K©Y©^©ú©û©I™K™ú™ü™ú´†´ú¨°¨ù≠°≠ùÆ°ÆûØ¢Øü∞¢∞ü±£±ü≤£≤†≥§≥†¥•¥°µ•µ°∂¶∂¢∑¶∑£∏®∏§π™πªπæª§∫´∫§ªÆªπª∫ª¶ºÆºπºæº®ΩØΩ≤ΩæΩ©æªæ™øªø™¿∫¿≠¡≥¡ˇãévyàêv", 26, "y", 26, "Ü", 26, "ë", 26, "QRvyÖìQRvyÖåéìQRvxÑâèìQRvxÉáêîQSvxÅÜëîI O Q S v y } Ü ë ï I!O!Q!S!v!y!}!Ö!í!ï!H""P""R""T""v""y""}""Ü""í""ï""H#P#R#T#c#e#w#y#}#Ç#Ñ#á#ì#ï#G$P$R$T$c$f$w$y$~$Ä$Ñ$á$ì$ñ$E%P%R%T%c%f%w%y%~%Ä%Ñ%á%ì%ñ%D&P&R&T&c&f&w&y&~&&Ñ&á&ì&ñ&B'P'R'T'd'f'w'z'~''Ö'á'î'ñ'A(I(M(P(R(U(d(f(i(l(w(z(~((Ö(à(î(ñ(?)E)M)P)R)U)d)f)i)l)x)z)~))Ö)à)î)ñ)>*E*M*O*S*U*d*f*i*m*x*z*~**Ö*à*î*ñ*>+C+M+O+S+U+d+f+i+m+x+z+~++Ü+à+î+ñ+>,B,L,O,S,U,d,g,j,n,x,z,~,,Ü,à,î,ó,=-A-L-O-S-U-d-g-k-n-x-z-~--Ü-â-î-ó-=.@.K.N.S.U.e.g.l.o.x.z.~..Ü.â.ï.ó.=/@/J/N/S/U/e/g/l/o/x/{/~/Ä/Ü/â/ï/ó/=0?0J0N0S0U0e0g0l0o0x0{0~0Ä0Ü0â0ï0ó0=1?1J1M1S1U1e1g1m1o1x1{1~1Ä1á1â1î1ó1=2?2J2L2S2U2e2g2m2p2y2{22Ä2á2â2î2ó2=3?3I3L3S3V3e3h3m3p3y3{33Ä3á3â3î3ñ3=4@4H4L4S4V4e4h4m4p4y4{44Ä4á4â4î4ñ4=5@5H5L5S5V5e5h5n5p5y5{55Ä5á5â5î5ñ5=6A6H6K6T6V6f6h6n6p6y6{66Å6á6â6î6ñ6>7B7G7J7T7V7f7h7n7p7y7{77Å7á7ä7î7ñ7?8C8F8J8T8V8f8h8o8p8y8{88Å8á8ä8î8ñ8?9J9T9V9f9h9o9q9y9{99Ç9á9ä9ì9ñ9?:I:T:V:f:h:o:q:y:{::Ç:à:ä:ì:ñ:A;H;T;V;f;h;o;q;y;{;;Ç;à;ä;ì;ñ;C<N<T<V<f<i<p<r<y<{<Ä<Ç<à<ä<ì<ï<C=R=T=V=f=i=p=r=y={=Ä=Ç=à=ä=í=ï=C>W>f>i>p>r>y>{>Ä>Ç>à>ä>í>ï>C?W?g?i?p?r?y?{?Ä?Ç?à?ä?í?ï?C@E@M@Y@c@i@p@s@y@{@Ä@Ç@à@ã@í@î@BAEARA[AaAiApAtAyA{AÄAÇAàAãAëAîABBDBTB\B^BjBqBtByB{BÄBÉBâBãBëBîBACDCUCjCrCtCyC{CÄCÉDâCåFëCíFADCDVDeDgDjDrDtDyD{DêDêFAECEXEaEhEjErEtEyE{EÅEÑEAFCFZF_FhFjFrFuFyF{FÅFÑFéFèFAGCGZG]GhGjGrGvGyG{GÇGÑGâGåGéGíGAHCHZH]HhHjHsHvHyH{HÇHÑHâHíHAICIZI]IhIjIsIvIyI{IÇIÑIäIëIAJCJZJ]JhJjJtJwJyJ{JÇJÑJäJêJAKCKZKZWhKkKtK{KÇKÖKäKèKBLCLhLkLuL{LÇLÖLãLéLBMDMhMkMuM{MÇMÖMãMçMBNDNiNkNvN{NÉNÖNBOEOYOYPiOkOvO{OÉOÖOCPFPiPkPvP{PÉPÖPCQGQYQYQiQkQvQzQÉQÖQDRHRXRYRiRkRvRzRÉRÖRDSHSXSYSiSkSwSzSDTITXTYTiTkTwTzTFUJUWUYUiUkUxUzUGVKVVVYVhVkVGWLWVWYWhWkWGXLXVXYXhXkXIYOYUYXYhYkYJZXZhZkZK[W[K\W\N]V]Q^S^êpípèqíqèrírésísétítåuíuåvëvâwèwxéxNyRyxyçy8zRz\z`zuzåz8{R{\{a{u{ä{5|R|[|a|p|Ñ|5}R}[}a}n}z}Ç}Ñ}5~9~C~D~O~Q~Y~^~l~v~Ç~Ñ~69CDOPY^jvÇÑCÄDÄYÄ]ÄjÄsÄÇÄÑÄCÅDÅXÅ\ÅhÅpÅÇÅÑÅCÇDÇXÇ[ÇgÇnÇÇÇÑÇCÉEÉXÉZÉfÉkÉÇÉÖÉCÑEÑWÑZÑeÑkÑÇÑÖÑCÖEÖWÖZÖeÖjÖÇÖÖÖCÜEÜWÜZÜeÜhÜÉÜÖÜCáEáVáYáeáháÉáÖáCàEàUàYàeàgàÉàÜàCâEâUâYâeâiâÉâÜâCäEäUäXäeäiäÉäÜäCãEãUãWãeãkãÑãÜãCåEåUåWåfånåÑåÜå å–åCçEçTçWç[ç]çhçrçÑçÜç»ç–çCéEéTé]éhéxéÑéáé»é–éCèEèTè]èjèxèÑèáè»è–èCêEêSê]êmêzêÑêáê»ê–êCëEëRë\ëqë{ëÖëáë»ë–ëCíFíRíWíwí|íÖíàí¶íÆí…í–íCìFìRìWìwì|ìÖìàì•ìØì…ì–ìCîFîRîVîyî|îÖîàî•îØî…î–îDïFïSïUïzï|ïÜïàï•ïØï…ï–ïDñFñSñUñzñ|ñÜñàñ•ñØñ ñœñDóGóSóUóeógóyó|óÜóàó¶óØóÀóœóDòGòSòUòeògòxò|òÜòâò¶òØòÃòœòDôGôSôUôeôgôxô|ôÜôâôßôØôEöGöSöUödögöxö|öÜöâö®öÆöEõGõSõUõdõgõvõzõáõäõ®õ¨õEúGúSúUúcúfúsúzúáúäúEùHùSùUùcùfùhùzùáùäùEûHûSûUûbûfûhûyûáûäûEüHüSüUübüeühüxüáüäüF†H†S†V†a†d†h†t†á†ä†F°H°S°V°a°d°F¢I¢T¢V¢`¢d¢F£I£T£V£`£c£F§I§T§W§^§b§F•J•T•a•G¶J¶U¶a¶ù¶û¶GßJßUß`ßùßüßG®J®V®_®ù®ü®G©J©ù©ü©ù™†™ù´°´û¨¢¨û≠¢≠üÆ£Æ†Ø§Ø°∞•∞°±¶±°≤¶≤¢≥ß≥£¥©¥§µ™µ§∂™∂¶∑´∑ß∏¨∏«∏…∏®π≠π√π…π©∫Æ∫¿∫…∫©ª∞ªæª…ª´º∞ºæº…º¨Ω≤Ω∏ΩƒΩ¨æ¬æÆø¿øØ¿¿¿∞¡∫¡ˇNQN", 26, "R", 26, "ç", 26, "í", 26, "NRstãìNRrtãìPRruãîQSrvâéëïQSsvâçëïQ S s v á å ë ï R!S!s!v!á!å!ì!ï!R""T""t""w""á""ã""ì""ñ""C#I#R#T#t#w#Å#Ñ#Ü#ä#ì#ó#C$I$R$T$a$c$u$w$Å$â$î$ó$C%I%R%U%a%c%u%x%|%}%Å%â%î%ó%C&I&R&U&a&c&u&x&|&~&Å&à&ï&ó&A'G'R'U'a'c'u'x'|'~'Ç'á'ï'ó'>(G(S(U(a(c(v(x(|(~(É(Ü(ï(ó(<)G)S)U)a)c)v)y)|))Å)Ü)ï)ò)9*H*S*U*a*c*v*y*|**Å*á*ï*ò*9+B+E+H+S+U+a+c+v+y+|+á+ï+ò+8,?,E,H,S,U,a,d,w,z,},á,ñ,ò,7-=-F-H-S-U-a-d-f-i-w-z-}-Ç-Ö-á-ñ-ò-6.:.E.H.S.U.b.d.f.j.x.z.}.Å.Ö.à.ñ.ò.6/:/E/H/S/U/b/d/f/k/x/z/}/Å/Ö/à/ñ/ò/6090E0H0S0U0b0d0f0k0x0z0}00Ö0à0ñ0ò06181E1G1S1U1b1d1h1l1x1z1~1Å4Ü1à1ñ1ò16282E2G2S2U2b2e2h2m2x2z2Ü2â2ñ2ò26383E3G3S3U3b3e3i3m3x3{3Ü3â3ñ3ò36494E4G4S4U4c4e4i4m4x4{4Ü4â4ñ4ò46595E5G5S5U5c5e5j5n5x5{55Ç6á5â5ñ5ò566:6E6G6S6U6c6e6k6n6y6{6á6â6ñ6ò667<7E7G7S7U7c7e7l7o7y7{77Ç7á7ä7ñ7ò778>8D8G8S8U8c8f8l8p8y8|8Ä8É8á8ä8ñ8ò879@9D9G9S9U9c9f9l9p9y9|9Ä9É9á9ä9ï9ò98:@:D:G:S:U:c:f:m:p:y:|:Ä:É:à:ä:ï:ò::;F;S;U;d;f;n;p;z;|;Å;É;à;ã;ï;ò;=<V<d<f<o<q<z<|<Å<É<à<ã<ï<ó<?=W=c=g=o=q=z=|=Å=Ñ=â=å=î=ó=?>Y>b>g>o>r>z>}@Å>Ö>â>å>î>ó>B?Y?a?g?p?r?Å?Ö?â?å?î?ó?C@F@T@g@p@r@Ç@Ö@ä@çCî@ñ@CAEAUAgApAsA{A}AÉAÜBîAñACBEBVBbBeBgBpBsB{B}BìBñBCCECVCbCeChCqCtC{C~FÉCÜCìCïECDEDVDYDeDhDqDtDÉDÜDãDéDCEEEVEYEeEhEqEuEÑEáEãEéEíEíECFEFWFYFfFhFrFuFÑFàFåFéFëFïFCGEGWGYGfGhGsGvG{G~GÖGàGåGéGêGîGCHEHWHYHfHiHsHvH{H~HÖHàHåHîHCIEIWIYIfIiIsIvI|I~IÜIàIåIìICJEJWJYJfJiJtJwJ|J~JÜJâJçJìJCKEKWKYKgKiKtKwK{K~KÜKâKçKíKCLFLVLYLgLiLuLxL{L~LÜLâLCMGMVMYMgMjMuM}MÜMâMCNGNVNYNgNjNuN}NÜNâNCOHOUOXOgOjOvO}ODPKPTPXPhPkPvP|PEQXQhQkQwQ{RFRXRhRkRGSWSiSkSJTVTiTlTOURUiUlUjVmVjWmWjXmXjYnYkZnZk[n[k\m\êpëpèqëqèrërésësçtëtãuëuãvêvNwQwyw|wáwêwIxQxyx|xxéxEyQy^yayyyåy>z@zCzQz]zazwzãz>{@{C{Q{]{a{w{à{>|J|[|a|r|Ç|+}4}>}F}Z}`}p}}}Ä}É}+~C~Y~_~m~x~Ä~É~+CW^lxÅÉ+ÄBÄWÄ]ÄlÄtÄÅÄÉÄ3ÅAÅVÅ[ÅjÅpÅÅÅÉÅ?ÇAÇTÇZÇhÇoÇÅÇÉÇ?ÉAÉSÉXÉgÉmÉÅÉÉÉ?ÑAÑSÑXÑgÑmÑÅÑÑÑ?ÖBÖRÖWÖgÖkÖÅÖÑÖ?ÜBÜRÜVÜfÜjÜÅÜÑÜ@áBáRáUáfáiáÇáÑá@àBàRàTàfàhàÇàÖà@âBâRâTâfâjâÇâÖâ@äBäRäTäfäjäÇäÖä@ãBãRãTãfãpãÉãÜã@åCåRåSågåtåÉåÜå åœå@çCçRçSçYç^çhçxçÑçÜç«ç—ç@éCéRéSéVé^éhézéÑéÜé«é—éAèCèRèSèVè^èoèzèÑèÜè«è—èBêCêRê^êsê{êÑêáê«ê“êBëDëRë[ëwë|ëÑëáë§ëÆë«ë“ëBíDíRíWíxí|íÖíáí£íØí«í“íBìDìRìWìxì|ìÖìàì£ìØì«ì“ìCîDîRîUîzî|îÖîàî£îØî«î“îCïEïRïTïyï|ïÖïàï£ïØï»ï“ïCñEñRñTñxñ|ñÜñàñ§ñØñ…ñ—ñCóEóRóTówó{óÜóâó§óØó óœóCòEòRòTòuò{òÜòâò§òØò òœòCôEôRôTôuôzôÜôâô•ôØôCöFöRöUösöyöáöâößöØöCõFõRõUõeõgõpõxõáõäõ™õ≠õDúFúSúUúeúvúáúäúDùFùSùUùeùvùáùãùDûFûSûUûeûtûàûãûDüGüSüUüdüqüàüãüD†H†S†V†c†g†à†ã†E°H°S°V°a°g°F¢I¢T¢W¢a¢g¢F£I£T£W£a£e£F§I§T§X§_§d§G•J•T•[•]•b•õ•ù•G¶K¶U¶a¶õ¶û¶GßKßUßaßõßûßH®K®W®`®õ®û®H©K©Y©^©ù©ü©I™K™ù™†™ù´°´ù¨¢¨ù≠¢≠ûÆ£ÆüØ£Ø†∞§∞†±•±œ±“±°≤•≤œ≤“≤¢≥¶≥Œ≥“≥¢¥ß¥Œ¥“¥£µ©µÃµ—µ£∂©∂Ã∂—∂§∑™∑À∑–∑¶∏¨∏ ∏œ∏ßπ≠π«πŒπ®∫Ø∫≈∫Õ∫®ª∂ª√ªÕª™º∂º√ºÃº¨Ω…Ω≠æ∆æØø≈øØ¿≈¿ˇãévyàêv", 26, "y", 26, "Ü", 26, "ë", 26, "QRvyÖìQRvyÖåéìQRvxÑâèìQRvxÉáêîQSvxÅÜëîI O Q S v y } Ü ë ï I!O!Q!S!v!y!}!Ö!í!ï!H""P""R""T""v""y""}""Ü""í""ï""H#P#R#T#c#e#w#y#}#Ç#Ñ#á#ì#ï#G$P$R$T$c$f$w$y$~$Ä$Ñ$á$ì$ñ$E%P%R%T%c%f%w%y%~%Ä%Ñ%á%ì%ñ%D&P&R&T&c&f&w&y&~&&Ñ&á&ì&ñ&B'P'R'T'd'f'w'z'~''Ö'á'î'ñ'A(I(M(P(R(U(d(f(i(l(w(z(~((Ö(à(î(ñ(?)E)M)P)R)U)d)f)i)l)x)z)~))Ö)à)î)ñ)>*E*M*O*S*U*d*f*i*m*x*z*~**Ö*à*î*ñ*>+C+M+O+S+U+d+f+i+m+x+z+~++Ü+à+î+ñ+>,B,L,O,S,U,d,g,j,n,x,z,~,,Ü,à,î,ó,=-A-L-O-S-U-d-g-k-n-x-z-~--Ü-â-î-ó-=.@.K.N.S.U.e.g.l.o.x.z.~..Ü.â.ï.ó.=/@/J/N/S/U/e/g/l/o/x/{/~/Ä/Ü/â/ï/ó/=0?0J0N0S0U0e0g0l0o0x0{0~0Ä0Ü0â0ï0ó0=1?1J1M1S1U1e1g1m1o1x1{1~1Ä1á1â1î1ó1=2?2J2L2S2U2e2g2m2p2y2{22Ä2á2â2î2ó2=3?3I3L3S3V3e3h3m3p3y3{33Ä3á3â3î3ñ3=4@4H4L4S4V4e4h4m4p4y4{44Ä4á4â4î4ñ4=5@5H5L5S5V5e5h5n5p5y5{55Ä5á5â5î5ñ5=6A6H6K6T6V6f6h6n6p6y6{66Å6á6â6î6ñ6>7B7G7J7T7V7f7h7n7p7y7{77Å7á7ä7î7ñ7?8C8F8J8T8V8f8h8o8p8y8{88Å8á8ä8î8ñ8?9J9T9V9f9h9o9q9y9{99Ç9á9ä9ì9ñ9?:I:T:V:f:h:o:q:y:{::Ç:à:ä:ì:ñ:A;H;T;V;f;h;o;q;y;{;;Ç;à;ä;ì;ñ;C<N<T<V<f<i<p<r<y<{<Ä<Ç<à<ä<ì<ï<C=R=T=V=f=i=p=r=y={=Ä=Ç=à=ä=í=ï=C>W>f>i>p>r>y>{>Ä>Ç>à>ä>í>ï>C?W?g?i?p?r?y?{?Ä?Ç?à?ä?í?ï?C@E@M@Y@c@i@p@s@y@{@Ä@Ç@à@ã@í@î@BAEARA[AaAiApAtAyA{AÄAÇAàAãAëAîABBDBTB\B^BjBqBtByB{BÄBÉBâBãBëBîBACDCUCjCrCtCyC{CÄCÉDâCåFëCíFADCDVDeDgDjDrDtDyD{DêDêFAECEXEaEhEjErEtEyE{EÅEÑEAFCFZF_FhFjFrFuFyF{FÅFÑFéFèFAGCGZG]GhGjGrGvGyG{GÇGÑGâGåGéGíGAHCHZH]HhHjHsHvHyH{HÇHÑHâHíHAICIZI]IhIjIsIvIyI{IÇIÑIäIëIAJCJZJ]JhJjJtJwJyJ{JÇJÑJäJêJAKCKZKZWhKkKtK{KÇKÖKäKèKBLCLhLkLuL{LÇLÖLãLéLBMDMhMkMuM{MÇMÖMãMçMBNDNiNkNvN{NÉNÖNBOEOYOYPiOkOvO{OÉOÖOCPFPiPkPvP{PÉPÖPCQGQYQYQiQkQvQzQÉQÖQDRHRXRYRiRkRvRzRÉRÖRDSHSXSYSiSkSwSzSDTITXTYTiTkTwTzTFUJUWUYUiUkUxUzUGVKVVVYVhVkVGWLWVWYWhWkWGXLXVXYXhXkXIYOYUYXYhYkYJZXZhZkZK[W[K\W\N]V]Q^S^êpípèqíqèrírésísétítåuíuåvëvâwèwxéxNyRyxyçy8zRz\z`zuzåz8{R{\{a{u{ä{5|R|[|a|p|Ñ|5}R}[}a}n}z}Ç}Ñ}5~9~C~D~O~Q~Y~^~l~v~Ç~Ñ~69CDOPY^jvÇÑCÄDÄYÄ]ÄjÄsÄÇÄÑÄCÅDÅXÅ\ÅhÅpÅÇÅÑÅCÇDÇXÇ[ÇgÇnÇÇÇÑÇCÉEÉXÉZÉfÉkÉÇÉÖÉCÑEÑWÑZÑeÑkÑÇÑÖÑCÖEÖWÖZÖeÖjÖÇÖÖÖCÜEÜWÜZÜeÜhÜÉÜÖÜCáEáVáYáeáháÉáÖáCàEàUàYàeàgàÉàÜàCâEâUâYâeâiâÉâÜâCäEäUäXäeäiäÉäÜäCãEãUãWãeãkãÑãÜã ãœãCåEåUåWåfånåÑåÜå…å—åCçEçTçWç[ç]çhçrçÑçÜç»ç—çCéEéTé]éhéxéÑéáé»é“éCèEèTè]èjèxèÑèáè»è“èCêEêSê]êmêzêÑêáê©ê≠ê»ê“êCëEëRë\ëqë{ëÖëáë®ë≠ë»ë“ëCíFíRíWíwí|íÖíàí•í≠í»í“íCìFìRìWìwì|ìÖìàì•ìØì»ì“ìCîFîRîVîyî|îÖîàî•îØî»î“îDïFïSïUïzï|ïÜïàï•ïØï»ï“ïDñFñSñUñzñ|ñÜñàñ•ñ∞ñ…ñ—ñDóGóSóUóeógóyó|óÜóàó•ó∞óDòGòSòUòeògòxò|òÜòâò•ò∞òDôGôSôUôeôgôxô|ôÜôâôßô∞ôEöGöSöUödögöxö|öÜöâö®ö∞öEõGõSõUõdõgõvõzõáõäõ©õØõEúGúSúUúcúfúsúzúáúäúEùHùSùUùcùfùhùzùáùäùEûHûSûUûbûfûhûyûáûäûEüHüSüUübüeühüxüáüäüF†H†S†V†a†d†h†t†á†ä†ÿ†⁄†F°H°S°V°a°d°ÿ°⁄°F¢I¢T¢V¢`¢d¢◊¢⁄¢F£I£T£V£`£c£◊£⁄£F§I§T§W§^§b§◊§Ÿ§F•J•T•a•ö•ú•◊•Ÿ•G¶J¶U¶a¶ö¶ù¶÷¶Ÿ¶GßJßUß`ßößùß÷ßŸßG®J®V®_®ö®ù®÷®Ÿ®G©J©õ©û©÷©Ÿ©õ™ü™’™ÿ™ú´°´’´ÿ´ú¨£¨‘¨◊¨ù≠£≠‘≠◊≠ùÆ§Æ”Æ◊ÆüØ•Ø”Ø◊Ø°∞ß∞“∞÷∞°±ß±—±÷±¢≤ß≤—≤’≤£≥®≥–≥‘≥•¥©¥œ¥‘¥¶µ´µœµ”µ¶∂´∂ ∂”∂ß∑¨∑ ∑“∑ß∏≠∏»∏—∏©πÆπ√π–π™∫±∫¬∫À∫™ª¥ªæªÀª¨º¥ºΩº…º≠Ω≈ΩØæƒæ≤øøø≤¿ø¿∏¡º¡˛"
+
+	section	.data,"aw",@progbits
+	public	_video_bin_len
+_video_bin_len:
+	dl	23350
+
+	section	.bss,"aw",@nobits
+	public	_video_fps
+_video_fps:
+	rb	1
+
+	section	.bss,"aw",@nobits
+	public	_video_version
+_video_version:
+	rb	1
+
+	section	.bss,"aw",@nobits
+	public	_video_scale_factor
+_video_scale_factor:
+	rb	1
+
+	section	.rodata,"a",@progbits
+	private	_.str
+_.str:
+	db	"== BAD VIDEO FILE ==", 0
+
+	section	.rodata,"a",@progbits
+	private	_.str.1
+_.str.1:
+	db	"Try encoding again, or stop trying", 0
+
+	section	.rodata,"a",@progbits
+	private	_.str.2
+_.str.2:
+	db	"to break my decoder >:((", 0
+
+	section	.rodata,"a",@progbits
+	private	_.str.3
+_.str.3:
+	db	"Press any key to exit..", 0
+
+	section	.rodata,"a",@progbits
+	private	_.str.4
+_.str.4:
+	db	"== LOADED VIDEO FILE ==", 0
+
+	section	.rodata,"a",@progbits
+	private	_.str.5
+_.str.5:
+	db	"Press any key to play! :D", 0
+
+	ident	"clang version 15.0.0 (https://github.com/jacobly0/llvm-project 6c61664110f888c0285ae4c48b150c9a7a4361bb)"
+	extern	__Unwind_SjLj_Register
+	extern	__frameset
+	extern	_gfx_Begin
+	extern	_usleep
+	extern	__lsub
+	extern	__lmulu
+	extern	__setflag
+	extern	__sdivu
+	extern	_gfx_FillScreen
+	extern	__Unwind_SjLj_Unregister
+	extern	_gfx_FillRectangle
+	extern	__ixor
+	extern	__imulu
+	extern	_gfx_PrintStringXY
+	extern	_os_GetCSC
+	extern	_gfx_End
+	extern	_clock
+	extern	__lshru
