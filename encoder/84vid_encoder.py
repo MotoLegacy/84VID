@@ -89,7 +89,6 @@ def convert_video_to_image_sequence():
     # Make sure target framerate isn't higher than
     # our video
     vid_fps = int(capture.get(cv2.CAP_PROP_FPS))
-    fps = int(args['fps'])
 
     # It is, warn and set it to the video's.
     if fps > vid_fps:
@@ -98,6 +97,7 @@ def convert_video_to_image_sequence():
         args['fps'] = vid_fps
 
     # Additionally, get the ratio of FPS rate for cutting frames.
+    fps = int(args['fps'])
     fps_rate = vid_fps / fps
 
     # Retrieve resolution scale
