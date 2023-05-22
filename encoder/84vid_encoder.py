@@ -28,6 +28,48 @@ COL_YEL = Fore.YELLOW
 COL_GREEN = Fore.GREEN
 COL_NONE = Style.RESET_ALL
 
+def get_crop_boundaries_for_image():
+    '''
+    Returns the XYWH boundaries for cropping OpenCV finds
+    using the frame number provided from -cf.
+    '''
+    cf = int(args['crop_frame'])
+
+    # Report.
+    print(f'{COL_BLUE}* {COL_NONE} Calculating boundaries for cropping.')
+
+    if cf == -1:
+        print(f'{COL_YEL}- {COL_NONE} Cropping disabled. This could result in wasteful meshes.')
+        print('   Consider yourself warned!')
+        return 0, 0, 0, 0
+    
+    # This is a "little" slow -- but we just open the video and interate
+    # through it like we do in conversion, the reason being is we want
+    # to avoid spamming the disk with writes, which we'd do if we export,
+    # then crop, then re-export. :^)
+    capture = cv2.VideoCapture(args['input_file'])
+
+    i = 0
+
+    while capture.isOpened():
+        frame_read, frame = capture.read()
+
+        if frame_read:
+            if i == cf:
+                gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+                _,thresh = cv2.threshold(gray, 1, 255, cv2.THRESH_BINARY)
+                cont,hi = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+                cnt = cont[0]
+                return cv2.boundingRect(cnt)
+            i += 1
+        else:
+            break
+
+    # We never encountered the frame, spew an error.
+    print(f'{COL_RED}Error{COL_NONE}: Could not find crop frame {cf}. Video had {i} frames.')
+    sys.exit()
+
+
 def convert_video_to_image_sequence():
     '''
     Uses the input file argument obtained to open the video
@@ -67,6 +109,9 @@ def convert_video_to_image_sequence():
     i = 0
     frame_caps = 0
 
+    # Image crop boundaries
+    crop_x, crop_y, crop_w, crop_h = get_crop_boundaries_for_image()
+
     # Dump the video as images.
     while capture.isOpened():
         frame_read, frame = capture.read()
@@ -79,6 +124,11 @@ def convert_video_to_image_sequence():
                 continue
 
             path = f'{TEMP_DIR_PATH}frame{str(i)}.png'
+
+            if (crop_x != 0 and crop_y != 0) or (crop_w != 0 and crop_h != 0):
+                frame = frame[crop_y:crop_y+crop_h,crop_x:crop_x+crop_w]
+
+            # Resize to resolution boundaries and export.
             frame = cv2.resize(frame, (res, res))
             cv2.imwrite(path, frame)
             i += 1
@@ -248,6 +298,8 @@ def fetch_cli_arguments():
                         default=1)
     parser.add_argument('-ct', '--color-threshold',
                         help='0-255 color value threshold for white pixels', default=150)
+    parser.add_argument('-cf', '--crop-frame',
+                        help='Frame to use as reference for cropping. -1 for none.', default=0)
     args = vars(parser.parse_args())
 
 def print_banner():
