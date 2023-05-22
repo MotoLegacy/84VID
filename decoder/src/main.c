@@ -113,6 +113,12 @@ void begin_decode(void)
     int time_per_frame_ms = 1000/(int)video_fps;
     int frame_time;
 
+    // We have a 240x240 canvas, on a 320x240 display.
+    // That's 80px left over space, 40px on each side.
+    // Let's add some black borders.
+    gfx_FillRectangle(0, 0, 40, 240); // Left side
+    gfx_FillRectangle(280, 0, 40, 240); // Right side
+
     // heheh.
     while(loop) {
         // Define clocks and start timer
@@ -120,13 +126,9 @@ void begin_decode(void)
         start_time = clock();
 
         // Blank Canvas
-        gfx_FillScreen(255);
-
-        // We have a 240x240 canvas, on a 320x240 display.
-        // That's 80px left over space, 40px on each side.
-        // Let's add some black borders.
-        gfx_FillRectangle(0, 0, 40, 240); // Left side
-        gfx_FillRectangle(280, 0, 40, 240); // Right side
+        gfx_SetColor(255);
+        gfx_FillRectangle(40, 0, 240, 240);
+        gfx_SetColor(0);
 
         // The rectangle we are going to be drawing.
         int rect_data_index = 0;
