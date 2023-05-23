@@ -22,7 +22,7 @@ opencv-python==4.7.0.72
 ```
 They can be installed automatically with `pip -r requirements.txt`.
 
-`84vid_encoder.py --help` will give you a list of arguments to use to encode your videos. To encode the provided sample, you can just run `8rvid_encoder.py -i sample.mp4 -f 12`. It will generate a `video.bin` file if all goes well.
+`84vid_encoder.py --help` will give you a list of arguments to use to encode your videos. To encode the provided sample, you can just run `84vid_encoder.py -i sample.mp4 -f 12`. It will generate a `video.bin` file if all goes well.
 
 ## Decoding Videos/Playback
 Binaries need to be built with the video data built-in in order to play them back. In order to build these binaries, the [CE-Programming Toolchain](https://github.com/CE-Programming/toolchain) is required. Your device will also need the [C Libraries](tiny.cc/clibs) installed to launch these binaries. You will also need access to the `xxd` command, which is provided in most standard unix environments.
